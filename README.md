@@ -17,7 +17,7 @@
 ##  Usage
 
   ```
-  import {ifilter, imap, sum, takeWhile} from 'super-iter';
+  import {ifilter, imap, sum, takeWhile} from '@ibrokethat/super-iter';
 
   let a1 = [1, 2, 3, 4, 5];
   let a2 = [10, 20, 30, 40, 50];
