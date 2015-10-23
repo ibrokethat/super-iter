@@ -3,8 +3,11 @@
 const StopIteration = new Error();
 const Sparse = {};
 
-export const GeneratorFunctionPrototype = Object.getPrototypeOf(function*() {yield 1});
-export const GeneratorFunction = GeneratorFunctionPrototype.constructor;
+const GeneratorFunctionPrototype = Object.getPrototypeOf(function*() {yield 1});
+const GeneratorFunction = GeneratorFunctionPrototype.constructor;
+
+exports.GeneratorFunctionPrototype = GeneratorFunctionPrototype;
+exports.GeneratorFunction = GeneratorFunction;
 
 
 /**
@@ -55,6 +58,7 @@ function returns (o) {
 
 function curry (fn) {
 
+  //  ...args doesn't work for this return if we don't babel => as well
   return (...args) => {
 
     switch (args.length) {
@@ -80,6 +84,7 @@ function curry (fn) {
 
 function curry1 (fn) {
 
+  //  ...args doesn't work for this return if we don't babel => as well
   return (...args) => {
 
     switch (args.length) {
@@ -103,7 +108,7 @@ function curry1 (fn) {
   @param        {object} object
   @return       {iterable}
 */
-export function iterator (object) {
+function iterator (object) {
 
   let o = typeof object === 'function' ? object() : object;
 
@@ -139,7 +144,7 @@ export function iterator (object) {
   }
 
 }
-
+exports.iterator = iterator;
 
 
 /**
@@ -150,7 +155,6 @@ export function iterator (object) {
 */
 
 function _forEach (o, fn) {
-
 
   try {
     //  fastpath
@@ -204,7 +208,7 @@ function _forEach (o, fn) {
 
 }
 
-export const forEach = curry(_forEach);
+let forEach = exports.forEach = curry(_forEach);
 
 
 
@@ -214,7 +218,7 @@ export const forEach = curry(_forEach);
   @param        {function} fn
   @return       {iterable}
 */
-export function collect (o, type) {
+function collect (o, type) {
 
   let r = returns(o);
 
@@ -250,7 +254,7 @@ function* _ifilter (o, fn) {
 }
 
 
-export const ifilter = curry(_ifilter);
+let filter = exports.ifilter = curry(_ifilter);
 
 
 
@@ -265,7 +269,7 @@ function _filter (o, fn) {
   return collect(_ifilter(o, fn), o);
 }
 
-export const filter = curry(_filter);
+exports.filter = curry(_filter);
 
 
 
@@ -304,7 +308,7 @@ function* _imap (...args) {
     let iterables = map(args, iterator);
     let data = invoke(iterables, 'next');
 
-    while (filter(data, v => v.done).length === 0) {
+    while (_filter(data, v => v.done).length === 0) {
 
       let [k, , t] = data[0].value;
 
@@ -317,7 +321,7 @@ function* _imap (...args) {
   }
 }
 
-export const imap = curry(_imap);
+exports.imap = curry(_imap);
 
 
 /**
@@ -327,6 +331,7 @@ export const imap = curry(_imap);
   @return       {object|array}
 */
 function _map (...args) {
+
 
   if (args.length === 2) {
 
@@ -344,7 +349,7 @@ function _map (...args) {
 }
 
 
-export const map = curry(_map);
+let map = exports.map = curry(_map);
 
 
 
@@ -355,15 +360,15 @@ export const map = curry(_map);
   @param        {any} [ret]
   @return       {number}
 */
-export function izip (...args) {
+function izip (...args) {
 
   if (args.length === 1) {
     return args[0];
   }
-
-  return _imap(...args, (...v) => v);
+  //  => doesn't work here - weird
+  return _imap(...args, (...args) => args);
 }
-
+exports.izip = izip;
 
 /*
   @description  adds the value of each index from each object into an array
@@ -371,10 +376,11 @@ export function izip (...args) {
   @param        {any} [ret]
   @return       {number}
 */
-export function zip (...args) {
+function zip (...args) {
 
   return collect(izip(...args), args[0]);
 }
+exports.zip = zip;
 
 
 
@@ -404,7 +410,7 @@ function* _itakeWhile (o, fn) {
   }
 }
 
-export const itakeWhile = curry(_itakeWhile);
+exports.itakeWhile = curry(_itakeWhile);
 
 
 /**
@@ -418,7 +424,7 @@ function _takeWhile (o, fn) {
   return collect(_itakeWhile(o, fn), o);
 }
 
-export const takeWhile = curry(_takeWhile);
+exports.takeWhile = curry(_takeWhile);
 
 
 
@@ -436,7 +442,7 @@ function _itake (o, n = 1) {
   return _itakeWhile(o, (v, k) => k < n);
 }
 
-export const itake = curry1(_itake);
+exports.itake = curry1(_itake);
 
 
 function _take (o, n = 1) {
@@ -444,7 +450,7 @@ function _take (o, n = 1) {
   return collect(_itake(o, n), o);
 }
 
-export const take = curry1(_take);
+exports.take = curry1(_take);
 
 
 
@@ -476,7 +482,7 @@ function* _idropWhile (o, fn) {
   }
 }
 
-export const idropWhile = curry(_idropWhile);
+exports.idropWhile = curry(_idropWhile);
 
 
 
@@ -491,7 +497,7 @@ function _dropWhile (o, fn) {
   return collect(_idropWhile(o, fn), o);
 }
 
-export const dropWhile = curry(_dropWhile);
+exports.dropWhile = curry(_dropWhile);
 
 
 
@@ -500,7 +506,7 @@ function _idrop (o, n = 1) {
   return _idropWhile(o, (v, k) => k < n);
 }
 
-export const idrop = curry1(_idrop);
+exports.idrop = curry1(_idrop);
 
 
 
@@ -509,11 +515,11 @@ function _drop (o, n = 1) {
   return collect(_idrop(o, n), o);
 }
 
-export const drop = curry1(_drop);
+exports.drop = curry1(_drop);
 
 
 
-export function _groupBy (o, fn) {
+function _groupBy (o, fn) {
 
   let type = o.constructor;
 
@@ -557,16 +563,16 @@ export function _groupBy (o, fn) {
   return map(r, (v) => v ? v.get() : null);
 }
 
-export const groupBy = curry(_groupBy);
+exports.groupBy = curry(_groupBy);
 
 
 
-export function _indexBy (o, fn) {
+function _indexBy (o, fn) {
 
   return _map(_igroupBy(o, fn), (v, k, type) => v);
 }
 
-export const indexBy = curry(_indexBy);
+exports.indexBy = curry(_indexBy);
 
 
 
@@ -596,7 +602,7 @@ function _part (o, fn) {
 
 }
 
-export const part = curry(_part);
+exports.part = curry(_part);
 
 
 
@@ -609,7 +615,7 @@ export const part = curry(_part);
   @param        {any} [arg1, arg2, ..., argN]
   @return       {array}
 */
-export function invoke (items, method) {
+function invoke (items, method) {
 
   let args = Array.prototype.slice.call(arguments, 2);
   let i = -1;
@@ -622,7 +628,7 @@ export function invoke (items, method) {
 
   return res;
 }
-
+exports.invoke = invoke;
 
 
 /**
@@ -632,7 +638,7 @@ export function invoke (items, method) {
   @param        {boolean} [only_existing]
   @return       {array}
 */
-export function pluck(items, key, only_existing) {
+function pluck(items, key, only_existing) {
 
   only_existing = only_existing === true;
 
@@ -660,7 +666,7 @@ export function pluck(items, key, only_existing) {
   return res;
 }
 
-
+exports.pluck = pluck;
 
 
 
@@ -684,7 +690,7 @@ function _first (o, fn) {
   return r;
 }
 
-export const first = curry(_first);
+let first = exports.first = curry(_first);
 
 
 
@@ -700,7 +706,7 @@ function _last (o, fn) {
   return r;
 }
 
-export const last = curry(_last);
+let last = exports.last = curry(_last);
 
 
 /**
@@ -716,7 +722,7 @@ function _some (o, fn) {
   return !! first(o, fn);
 }
 
-export const some = curry(_some);
+exports.some = curry(_some);
 
 
 
@@ -733,7 +739,7 @@ function _every (o, fn) {
   return !(!! first(o, negate.bind(null, fn)));
 }
 
-export const every = curry(_every);
+exports.every = curry(_every);
 
 
 
@@ -749,7 +755,7 @@ function _indexOf (o, el) {
   return r ? r[1] : -1;
 }
 
-export const indexOf = curry(_indexOf);
+exports.indexOf = curry(_indexOf);
 
 
 
@@ -765,7 +771,7 @@ function _findIndex (o, fn) {
   return r ? r[1] : -1;
 }
 
-export const findIndex = curry(_findIndex);
+exports.findIndex = curry(_findIndex);
 
 
 
@@ -781,7 +787,7 @@ function _find (o, fn) {
   return r ? r[0] : undefined;
 }
 
-export const find = curry(_find);
+exports.find = curry(_find);
 
 
 
@@ -797,7 +803,7 @@ function _lastIndexOf (o, el) {
   return r ? r[1] : -1;
 }
 
-export const lastIndexOf = curry(_lastIndexOf);
+exports.lastIndexOf = curry(_lastIndexOf);
 
 
 
@@ -813,7 +819,7 @@ function _findLastIndex (o, fn) {
   return r ? r[1] : -1;
 }
 
-export const findLastIndex = curry(_findLastIndex);
+exports.findLastIndex = curry(_findLastIndex);
 
 
 
@@ -829,7 +835,7 @@ function _findLast (o, fn) {
   return r ? r[0] : undefined;
 }
 
-export const findLast = curry(_findLast);
+exports.findLast = curry(_findLast);
 
 
 
@@ -840,7 +846,7 @@ export const findLast = curry(_findLast);
   @param        {function} fn
   @return       {any}
 */
-export function reduce (o, fn, acc){
+function reduce (o, fn, acc){
 
   let noAcc = typeof acc === 'undefined';
   let iterable;
@@ -869,7 +875,7 @@ export function reduce (o, fn, acc){
   return acc;
 }
 
-
+exports.reduce = reduce;
 
 
 /**
@@ -878,13 +884,14 @@ export function reduce (o, fn, acc){
   @param        {any} [ret]
   @return       {number}
 */
-export function sum (o, acc) {
+function sum (o, acc) {
   return reduce(o, (acc, a) => acc + a, acc);
 }
 
+exports.sum = sum;
 
 
-export function* chain (...args) {
+function* chain (...args) {
 
   if(args.length === 1) {
     return iterator(args[0]);
@@ -910,7 +917,7 @@ export function* chain (...args) {
   }
 }
 
-
+exports.chain = chain;
 
 
 /**
@@ -920,7 +927,7 @@ export function* chain (...args) {
   @param        {number} [step]
   @return       {iterable}
 */
-export function* irange (start, stop, step = 1) {
+function* irange (start, stop, step = 1) {
 
   let i = 0;
 
@@ -931,3 +938,4 @@ export function* irange (start, stop, step = 1) {
   }
 }
 
+exports.irange = irange;

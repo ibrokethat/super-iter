@@ -1,23 +1,26 @@
-"use strict";
-
-import assert from 'assert';
-import sinon from 'sinon';
-import * as underTest from '../index';
-
-import {expect} from 'chai';
-
-let arr;
-let set;
-let map;
-let obj;
-let gen;
-let genMap;
-let genSet;
-let genObj;
-let objSym;
-let fakes;
+'use strict';
 
 describe("test iter module: ", () => {
+
+  'use strict';
+
+  let sinon = require('sinon');
+  let underTest = require('../index');
+
+  let expect = require('chai').expect;
+
+
+  let arr;
+  let set;
+  let map;
+  let obj;
+  let gen;
+  let genMap;
+  let genSet;
+  let genObj;
+  let objSym;
+  let fakes;
+
 
 
   beforeEach(()  =>  {
@@ -59,10 +62,10 @@ describe("test iter module: ", () => {
     };
 
     genObj = function* (six) {
-      var o = {one: 1, two: 2, three: 3, four: 4, five: 5};
+      let o = {one: 1, two: 2, three: 3, four: 4, five: 5};
       if (six) o['six'] = 3;
-      var i = 0;
-      var keys = Object.keys(o);
+      let i = 0;
+      let keys = Object.keys(o);
 
 
       while (i < keys.length) {
@@ -71,10 +74,10 @@ describe("test iter module: ", () => {
     };
 
     genMap = function* (six) {
-      var o = {one: 1, two: 2, three: 3, four: 4, five: 5};
+      let o = {one: 1, two: 2, three: 3, four: 4, five: 5};
       if (six) o['six'] = 3;
-      var i = 0;
-      var keys = Object.keys(o);
+      let i = 0;
+      let keys = Object.keys(o);
 
 
       while (i < keys.length) {
@@ -1867,6 +1870,19 @@ describe("test iter module: ", () => {
       expect(results.get(keys[0])).to.be.deep.equal({ten: 10, twenty: 20});
       expect(results.get(keys[1])).to.be.deep.equal({thirty: 30});
       expect(results.get(keys[2])).to.be.deep.equal({forty: 40, fifty: 50});
+
+    });
+
+  });
+
+  describe('currying', () => {
+
+
+    it.only('should curry correctly', () => {
+
+      let mapper = underTest.map(value => value * 2);
+
+      expect(mapper(arr)).to.be.deep.equal([20, 40, 60, 80, 100]);
 
     });
 
