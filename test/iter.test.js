@@ -1878,7 +1878,7 @@ describe("test iter module: ", () => {
   describe('currying', () => {
 
 
-    it.only('should curry correctly', () => {
+    it('should curry correctly', () => {
 
       let mapper = underTest.map(value => value * 2);
 
